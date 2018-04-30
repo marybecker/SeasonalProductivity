@@ -1,4 +1,4 @@
-setwd("P:/Projects/GitHub_Prj/SeasonalProductivity")
+setwd("/Users/tbecker/Documents/Projects/GitHubProjects/SeasonalProductivity")
 
 library(vegan)
 library(reshape2)
@@ -20,3 +20,13 @@ SPDist$RSID<-substr(SPDist$SID,1,3)
 unique(site.name[c("STA_SEQ","Station_Name")])
 site.comb<-SPDist[,6:7]
 site.comb<-unique(site.comb[c("RSID","CSID")])
+site.comb$mean<- 0
+
+##Calcuated average similarity measure for each combination##
+for (i in 1:dim(site.comb)[1]) {
+s<- site.comb[i,]
+c<-SPDist[which(SPDist$CSID==s$CSID[1] & SPDist$RSID==s$RSID[1]),]
+c<-c[which(c$value!=0),]
+m<-mean(c$value)
+site.comb$mean[i]<-m
+}
