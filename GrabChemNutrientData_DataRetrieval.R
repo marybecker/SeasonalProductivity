@@ -1,4 +1,4 @@
-setwd("P:/Projects/GitHub_Prj/SeasonalProductivity")
+setwd("/Users/tbecker/Documents/Projects/GitHubProjects/SeasonalProductivity")
 
 library(dataRetrieval)
 library(plyr)
@@ -79,3 +79,21 @@ pdf("NutrientRanges.pdf",width=11,height=8)
 multiplot(p1,p2,p3,p4,p5,p6,p7,p8,p9,cols=3)
 dev.off()
 
+###########Scatterplots by site###################
+###########**Specify site below**#################
+for (i in 1:dim(n)[1]){
+  d<- data[data$parm_cd==n[i,1],]
+  d<-d[d$site_no=='01189000',]
+  
+  assign(paste0("p",i), 
+         ggplot(d,aes(sample_dt,result_va))+
+           geom_point()+
+           geom_smooth(se=TRUE,colour="black")+
+           labs(title=n[i,2])+
+           theme(axis.title.x=element_blank(),axis.title.y=element_blank()))
+  
+}
+
+pdf("NutrientScatterplot_01189000.pdf",width=11,height=8)
+multiplot(p1,p2,p3,p4,p5,p6,p7,p8,p9,cols=3)
+dev.off()

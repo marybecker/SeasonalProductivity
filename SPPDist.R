@@ -1,4 +1,4 @@
-setwd("P:/Projects/GitHub_Prj/SeasonalProductivity")
+setwd("/Users/tbecker/Documents/Projects/GitHubProjects/SeasonalProductivity")
 
 library(vegan)
 library(reshape2)
@@ -9,12 +9,13 @@ SPP<- read.csv("data/SPP.csv",header=TRUE,row.names=1)
 SPP[is.na(SPP)] <- 0
 sites<- read.csv("data/sites.csv",header=TRUE)
 
-SPP<- decostand(SPP,"hellinger")
+#SPP<-sqrt(SPP)#Transformation when rel abund values
+SPP<- decostand(SPP,"hellinger")#Sqrt of rel abundance
 
 SPP.dist <- vegdist(SPP,"bray")
 SPP.dist<-as.matrix(SPP.dist)
 levelplot(SPP.dist,at=seq(0,1,0.01),
-          col.regions=topo.colors(100),scales=list(cex=0.5),
+          col.regions=topo.colors(100),scales=list(cex=0.4),
           xlab="",ylab="",main="Percent Difference Coefficient (Bray Curtis)")
 
 
@@ -45,7 +46,6 @@ site.comb$mean[i]<-m
 ####Similarity within sites collected over the POR###########
 #######################################################################
 SPDist<- melt(as.matrix(SPP.dist),varnames=c("SID","col"))
-write.csv(SPDist,"SPBCDist.csv")
 SPDist<-merge(sites,SPDist,by="SID")
 SPDist$CSID<-substr(SPDist$col,1,3)
 SPDist$RSID<-substr(SPDist$SID,1,3)
