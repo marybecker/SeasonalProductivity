@@ -1,4 +1,4 @@
-setwd("/Users/tbecker/Documents/Projects/GitHubProjects/SeasonalProductivity")
+setwd("P:/Projects/GitHub_Prj/SeasonalProductivity")
 
 library(vegan)
 library(reshape2)
@@ -8,6 +8,17 @@ library(lattice)
 SPP<- read.csv("data/SPP.csv",header=TRUE,row.names=1)
 SPP[is.na(SPP)] <- 0
 sites<- read.csv("data/sites.csv",header=TRUE)
+
+SPP5<- decostand(SPP,"pa")
+SPP5<- SPP[,colSums(SPP5)<5]
+n<- colnames(SPP5)
+SPP5<- SPP[,n]
+Other<-rowSums(SPP5)
+Oname<-names(Other)
+Other<- melt(as.data.frame(Other))
+row.names(Other)<-Oname
+Other$variable<- NULL
+colnames(Other)<-"Other"
 
 #SPP<-sqrt(SPP)#Transformation when rel abund values
 SPP<- decostand(SPP,"hellinger")#Sqrt of rel abundance
