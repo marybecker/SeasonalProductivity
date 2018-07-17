@@ -10,7 +10,10 @@ library(lubridate)
 SPP<- read.csv("data/SPP.csv",header=TRUE,row.names=1)
 SPP[is.na(SPP)] <- 0
 sites<- read.csv("data/sites.csv",header=TRUE)
-sites$Collect_Date<-as_date(sites$Collect_Date)
+sites$Collect_Date<-paste0(substr(sites$Collect_Date,6,9),"-0",
+                          substr(sites$Collect_Date,1,1),"-",
+                          substr(sites$Collect_Date,3,4))
+#sites$Collect_Date<-as_date(sites$Collect_Date)
 sites$month<-as.numeric(substr(sites$SID,4,4))
 
 
@@ -37,19 +40,19 @@ ggsave(paste(Stream,"_SDiv.jpg"),width=4,height=4)
 
 ############Mantel Tests By Stream#######################
 #########################################################
-Stream<-"Norwalk River"
+Stream<-"Pequabuck River"
 distStream<-sites[sites$Stream==Stream,]
 distSite<-distStream[c("month")]
 rownames(distSite)<-distStream$SID
 Site.dist<-vegdist(distSite,"euclidean")
 
-SPPStream<-SPP[1:6,] #13:18 - Salmon, 7:12 - Pequabuck, 1:6 - Norwalk
+
+SPPStream<-SPP[7:12,] #13:18 - Salmon, 7:12 - Pequabuck, 1:6 - Norwalk
 SPPStream<- decostand(SPPStream,"hellinger")#Sqrt of rel abundance
 SSPP.dist <- vegdist(SPPStream,"bray")
 
-mantel(SSPP.dist,Site.dist)
-
-
+SPPTime<-mantel(SSPP.dist,Site.dist)
+SPPTime
 
 
 ######################################################################
@@ -114,21 +117,38 @@ SPDist$MDiff<-abs(SPDist$MS1-SPDist$MS2)
 SPDist<-merge(SPDist,sites,by.x=c("col","Station.ID","Stream"),
               by.y=c("SID","Station.ID","Stream"))
 colnames(SPDist)[5]<-"SimDate"
-colnames(SPDist)[12]<-"Collect_Date"
+colnames(SPDist)[14]<-"Collect_Date"
 SPDist$SimDate<-as_date(SPDist$SimDate)
 SPDist$Collect_Date<-as_date(SPDist$Collect_Date)
 SPDist$DDiff<-abs(SPDist$Collect_Date-SPDist$SimDate)
+SPDist$TPDiff<-abs(SPDist$TP.x-SPDist$TP.y)
 
-Stream<-"Salmon River"
+Stream<-"Pequabuck River"
 SPDistSite<-SPDist[SPDist$Stream==Stream,]
 ggplot(SPDistSite,aes(x=DDiff,y=((1-value)*100)))+
   geom_point()+
   geom_smooth(method=lm,se=FALSE,colour="black")+
   ylim(0,100)+
   labs(y ="Species similarity (%)", x="Temporal distance (days)",
-       title=Stream)
+       title=Stream)+
+  annotate("text", x=c(40,40), y=c(90,85), 
+           label=c("mantel r = 0.9653","p = 0.003"),hjust=0)
 
 ggsave(paste(Stream,".jpg"),width=4,height=4)
+
+# Spp Similarity vs TP Diff
+Stream<-"Salmon River"
+SPDistSite<-SPDist[SPDist$Stream==Stream,]
+ggplot(SPDistSite,aes(x=TPDiff,y=((1-value)*100)))+
+  geom_point()+
+  geom_smooth(method=lm,se=FALSE,colour="black")+
+  ylim(0,100)+
+  labs(y ="Species similarity (%)", x="TP (mg/L) distance",
+       title=Stream)+
+  annotate("text", x=c(0.001,0.001), y=c(90,85), 
+           label=c("mantel r = =0.1944","p = 0.7639"),hjust=0)
+
+ggsave(paste(Stream,"SPPTPDiff.jpg"),width=4,height=4)
   
 
 SPDistM<-SPDist[SPDist$MS1==6,]
