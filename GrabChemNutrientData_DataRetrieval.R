@@ -1,4 +1,6 @@
-setwd("/Users/tbecker/Documents/Projects/GitHubProjects/SeasonalProductivity")
+setwd("P:/Projects/GitHub_Prj/SeasonalProductivity")
+
+samples<-read.csv("data/sites.csv",header=TRUE)
 
 library(dataRetrieval)
 library(plyr)
@@ -6,10 +8,12 @@ library(ggplot2)
 library(grid)
 library(reshape2)
 
+
 SID<- c("01189000","01209700","01193500")
 Cd<-c("00605","00608","00613","00618","00631","00660","00665","00671","62855")
-sdate<-"2016-01-01"
-edate<-"2017-01-01"
+CdFlow<-"00060"
+sdate<-"2016-04-01"
+edate<-"2016-10-01"
 
 
 data <- readNWISqw(siteNumbers = SID,
@@ -17,7 +21,13 @@ data <- readNWISqw(siteNumbers = SID,
                      startDate = sdate,
                      endDate = edate)
 
+flowdata<-readNWISdata(siteNumbers = SID,
+                       parameterCd = CdFlow,
+                       startDate = sdate,
+                       endDate = edate)
+
 write.csv(data,"GrabChem_NutrientData.csv")
+write.csv(flowdata,"flowdata.csv")
 
 
 dsum<- data%>%
@@ -25,6 +35,17 @@ dsum<- data%>%
           summarize(count=n(),avg=mean(result_va),
                 min=min(result_va),max=max(result_va),
                 med=median(result_va))
+
+
+#########Flow Plot###########################
+
+ggplot(flowdata[which(flowdata$site_no=='01193500'),],aes(dateTime,X_00060_00003))+
+  geom_line()
+
+
+
+
+
 
 
 #####MULTI-Plot Function##############

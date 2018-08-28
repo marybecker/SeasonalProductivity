@@ -40,14 +40,14 @@ ggsave(paste(Stream,"_SDiv.jpg"),width=4,height=4)
 
 ############Mantel Tests By Stream#######################
 #########################################################
-Stream<-"Pequabuck River"
+Stream<-"Salmon River"
 distStream<-sites[sites$Stream==Stream,]
-distSite<-distStream[c("month")]
+distSite<-distStream[c("Temp")]
 rownames(distSite)<-distStream$SID
 Site.dist<-vegdist(distSite,"euclidean")
 
 
-SPPStream<-SPP[7:12,] #13:18 - Salmon, 7:12 - Pequabuck, 1:6 - Norwalk
+SPPStream<-SPP[13:18,] #13:18 - Salmon, 7:12 - Pequabuck, 1:6 - Norwalk
 SPPStream<- decostand(SPPStream,"hellinger")#Sqrt of rel abundance
 SSPP.dist <- vegdist(SPPStream,"bray")
 
@@ -122,7 +122,9 @@ SPDist$SimDate<-as_date(SPDist$SimDate)
 SPDist$Collect_Date<-as_date(SPDist$Collect_Date)
 SPDist$DDiff<-abs(SPDist$Collect_Date-SPDist$SimDate)
 SPDist$TPDiff<-abs(SPDist$TP.x-SPDist$TP.y)
+SPDist$TempDiff<-abs(SPDist$Temp.x-SPDist$Temp.y)
 
+# Spp Similarity Vs Time
 Stream<-"Pequabuck River"
 SPDistSite<-SPDist[SPDist$Stream==Stream,]
 ggplot(SPDistSite,aes(x=DDiff,y=((1-value)*100)))+
@@ -151,6 +153,29 @@ ggplot(SPDistSite,aes(x=TPDiff,y=((1-value)*100)))+
 ggsave(paste(Stream,"SPPTPDiff.jpg"),width=4,height=4)
   
 
+
+# Spp Similarity vs Temp Diff
+Stream<-"Salmon River"
+SPDistSite<-SPDist[SPDist$Stream==Stream,]
+ggplot(SPDistSite,aes(x=TempDiff,y=((1-value)*100)))+
+  geom_point()+
+  geom_smooth(method=lm,se=FALSE,colour="black")+
+  ylim(0,100)+
+  labs(y ="Species similarity (%)", x="Temperature (Degree C) distance",
+       title=Stream)+
+  annotate("text", x=c(1,1), y=c(90,85), 
+           label=c("mantel r = 0.4487","p = 0.057"),hjust=0)
+
+ggsave(paste(Stream,"SPPTempDiff.jpg"),width=4,height=4)
+
+
+SPDistM<-SPDist[SPDist$MS1==6,]
+ggplot(SPDistM,aes(x=MS2,y=((1-value)*100),group=Stream))+
+  geom_point(aes(colour=Stream))+
+  ylim(0,100)+
+  labs(y ="Species Similarity (%)", x="Month")
+
+#######
 SPDistM<-SPDist[SPDist$MS1==6,]
 ggplot(SPDistM,aes(x=MS2,y=((1-value)*100),group=Stream))+
   geom_point(aes(colour=Stream))+
