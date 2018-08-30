@@ -91,7 +91,7 @@ SPDist$MS1<-as.numeric(substr(SPDist$SID,4,4))
 SPDist$MS2<-as.numeric(substr(SPDist$col,4,4))
 SPDist<-SPDist[which(SPDist$MS1-SPDist$MS2==0 & SPDist$CSID!=SPDist$RSID),]
 
-site.comb<-SPDist[,6:7]
+site.comb<-SPDist[,10:11]
 site.comb<-unique(site.comb[c("RSID","CSID")])
 site.comb$mean<- 0
 
@@ -103,6 +103,14 @@ c<-c[which(c$value!=0),]
 m<-mean(c$value)
 site.comb$mean[i]<-m
 }
+
+BTWSiteDist<- SPDist[which(SPDist$RSID=='NOR'&SPDist$CSID=='PEQ'),]
+ggplot(BTWSiteDist,aes(x=month,y=((1-value)*100)))+
+  geom_point()+
+  geom_smooth(method=lm,se=FALSE,colour="black")+
+  ylim(0,100)+
+  labs(y ="Species similarity (%)", x="Month",
+       title="Norwalk vs. Pequabuck")
 
 ####Similarity within sites collected over the POR###########
 #######################################################################
