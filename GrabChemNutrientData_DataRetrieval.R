@@ -1,4 +1,4 @@
-setwd("P:/Projects/GitHub_Prj/SeasonalProductivity")
+setwd("/Users/tbecker/Documents/Projects/GitHubProjects/SeasonalProductivity")
 
 samples<-read.csv("data/sites.csv",header=TRUE)
 
@@ -10,7 +10,8 @@ library(reshape2)
 
 
 SID<- c("01189000","01209700","01193500")
-Cd<-c("00605","00608","00613","00618","00631","00660","00665","00671","62855")
+Cd<-c("70957")
+#Cd<-c("00605","00608","00613","00618","00631","00660","00665","00671","62855")
 CdFlow<-"00060"
 sdate<-"2016-04-01"
 edate<-"2016-10-01"
@@ -26,6 +27,7 @@ flowdata<-readNWISdata(siteNumbers = SID,
                        startDate = sdate,
                        endDate = edate)
 
+write.csv(data,"data/chlaData.csv")
 write.csv(data,"GrabChem_NutrientData.csv")
 write.csv(flowdata,"flowdata.csv")
 
@@ -39,13 +41,14 @@ dsum<- data%>%
 
 #########Flow Plot###########################
 
-ggplot(flowdata[which(flowdata$site_no=='01193500'),],aes(dateTime,X_00060_00003))+
+ggplot(flowdata[which(flowdata$site_no=='01209700'),],aes(dateTime,X_00060_00003))+
   geom_line()
 
 
+#########Chla TP Plot###########################
 
-
-
+ggplot(samples[which(samples$Station.ID=='1189000'),],aes(Temp,Chla))+
+  geom_point()
 
 
 #####MULTI-Plot Function##############
