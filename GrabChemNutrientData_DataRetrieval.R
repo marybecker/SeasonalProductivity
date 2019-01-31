@@ -55,9 +55,18 @@ samples[i,12]<-median(flowdata1[,4])
 
 #########Flow Plot###########################
 
-ggplot(flowdata[which(flowdata$site_no=='01209700'),],aes(dateTime,X_00060_00003))+
-  geom_line()
+flowday<-samples
+flowday$site_no<-paste0(0,flowday$Station.ID)
+flowday$dateTime<-flowday$Collect_Date
+flowday<-merge(flowdata,flowday,by=c("site_no","dateTime"))
+flowday$dateTime<-ymd(flowday$dateTime)
 
+siteno<-'01209700'
+flowdataSite<-flowdata[which(flowdata$site_no==siteno),]
+flowdaysite<-flowday[which(flowday$site_no==siteno),]
+
+ggplot(flowdataSite,aes(dateTime,X_00060_00003))+
+  geom_line()
 
 #########Chem Line Plot###########################
 title<-c("Phosphorus mg/L","Total Nitrogen mg/L","Orthophosphate mg/L",
