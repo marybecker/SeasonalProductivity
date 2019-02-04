@@ -1,4 +1,4 @@
-setwd("P:/Projects/GitHub_Prj/SeasonalProductivity")
+setwd("/home/mbecker/Documents/GitHub/SeasonalProductivity")
 
 library(vegan)
 library(reshape2)
@@ -15,6 +15,9 @@ sites$Collect_Date<-paste0(substr(sites$Collect_Date,6,9),"-0",
                           substr(sites$Collect_Date,3,4))
 #sites$Collect_Date<-as_date(sites$Collect_Date)
 sites$month<-as.numeric(substr(sites$SID,4,4))
+sites$Collect_Date<-ymd(sites$Collect_Date)
+sites$Stream<- factor(sites$Stream,
+                        levels=c("Salmon River","Norwalk River","Pequabuck River"))
 
 
 ##########Diversity index###########################
@@ -24,19 +27,12 @@ div<-as.data.frame(div)
 div$SID<-row.names(div)
 div<-merge(sites,div,by="SID")
 
-
-Stream<-"Salmon River"
-divSite<-div[div$Stream==Stream,]
-ggplot(divSite,aes(x=Collect_Date,y=div))+
+ggplot(div,aes(x=Collect_Date,y=div,colour=Stream,group=Stream))+
   geom_point()+
-  geom_smooth(method=lm,se=FALSE,colour="black")+
-  ylim(0,4)+
-  labs(y ="Shannon diversity", x="Collection Date",
-       title=Stream)
-
-ggsave(paste(Stream,"_SDiv.jpg"),width=4,height=4)
-
-
+  geom_line()+
+  scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+
+  labs(colour="Stream",x=NULL,y=NULL,title="Shannon Diversity Index")+
+  theme(legend.position="bottom")
 
 ############Mantel Tests By Stream#######################
 #########################################################
@@ -71,7 +67,7 @@ SPPTime
 # colnames(Other)<-"Other"
 
 #SPP<-sqrt(SPP)#Transformation when rel abund values
-SPP<- decostand(SPP,"hellinger")#Sqrt of rel abundance
+SPP<- decostand(SPP,"total")#rel abundance
 
 SPP.dist <- vegdist(SPP,"bray")
 SPP.dist<-as.matrix(SPP.dist)
@@ -125,7 +121,7 @@ SPDist$MDiff<-abs(SPDist$MS1-SPDist$MS2)
 SPDist<-merge(SPDist,sites,by.x=c("col","Station.ID","Stream"),
               by.y=c("SID","Station.ID","Stream"))
 colnames(SPDist)[5]<-"SimDate"
-colnames(SPDist)[14]<-"Collect_Date"
+colnames(SPDist)[23]<-"Collect_Date"
 SPDist$SimDate<-as_date(SPDist$SimDate)
 SPDist$Collect_Date<-as_date(SPDist$Collect_Date)
 SPDist$DDiff<-abs(SPDist$Collect_Date-SPDist$SimDate)
@@ -133,7 +129,7 @@ SPDist$TPDiff<-abs(SPDist$TP.x-SPDist$TP.y)
 SPDist$TempDiff<-abs(SPDist$Temp.x-SPDist$Temp.y)
 
 # Spp Similarity Vs Time
-Stream<-"Pequabuck River"
+Stream<-"Salmon River"
 SPDistSite<-SPDist[SPDist$Stream==Stream,]
 ggplot(SPDistSite,aes(x=DDiff,y=((1-value)*100)))+
   geom_point()+

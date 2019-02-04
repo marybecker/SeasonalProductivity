@@ -1,10 +1,10 @@
-setwd("/Users/tbecker/Documents/Projects/GitHubProjects/SeasonalProductivity")
+setwd("/home/mbecker/Documents/GitHub/SeasonalProductivity")
 
 Alg<-read.csv("data/AlgBioData_121818.csv",header=TRUE)
 
-D<-subset(Alg,Alg$Group=='D',select=c(SiteName,CollectionMonth,
+D<-subset(Alg,Alg$Group=='N',select=c(SiteName,CollectionMonth,
                                       BioDataTaxonName,
-                                      NumDiaCellsCounted_LiveOrDead))
+                                      AdjLabCount))
 names(D)<-c("SName","Month","Taxa","N")
 D$SID<-paste0(substr(D$SName,1,3),D$Month)
 D<-D[,3:5]
@@ -19,4 +19,4 @@ D[,1] <- NULL
 colSums(D)
 rowSums(D)
 
-write.csv(D,"SPP.csv")
+write.csv(D,"SoftAlgSPP.csv")

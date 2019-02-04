@@ -1,4 +1,4 @@
-setwd("P:/Projects/GitHub_Prj/SeasonalProductivity")
+setwd("/home/mbecker/Documents/GitHub/SeasonalProductivity")
 
 samples<-read.csv("data/sites.csv",header=TRUE)
 samples$Collect_Date<-mdy(samples$Collect_Date)
@@ -58,32 +58,53 @@ samples[i,12]<-median(flowdata1[,4])
 flowday<-samples
 flowday$site_no<-paste0(0,flowday$Station.ID)
 flowday$dateTime<-flowday$Collect_Date
+flowday$dateTime<-mdy(flowday$dateTime)
 flowday<-merge(flowdata,flowday,by=c("site_no","dateTime"))
 flowday$dateTime<-ymd(flowday$dateTime)
 
 siteno<-'01209700'
 flowdataSite<-flowdata[which(flowdata$site_no==siteno),]
 flowdaysite<-flowday[which(flowday$site_no==siteno),]
+flowdataSite$sampleday<-ifelse(flowdaysite$dateTime==flowdataSite$dateTime,"yes","no")
 
 ggplot(flowdataSite,aes(dateTime,X_00060_00003))+
-  geom_line()
+  geom_point(color="blue")+
+  geom_point(flowdaysite,aes(dateTime,X_00060_00003,color="red"))
 
 #########Chem Line Plot###########################
 title<-c("Phosphorus mg/L","Total Nitrogen mg/L","Orthophosphate mg/L",
          "Chlorophyll a, periphyton, mg/m2")
 
-ggplot(samples,aes(Collect_Date,samples[,9],
+ggplot(samples,aes(Collect_Date,samples[,6],
                    colour=factor(Stream),
                    group=factor(Stream,
                                 levels=c("Salmon River", "Norwalk River","Pequabuck River"))))+
-  geom_point(size=4)+
-  geom_line(size=2)+
+  geom_point(size=2)+
+  geom_line(size=1)+
   scale_x_date(date_labels = "%m-%Y")+
   scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+
-  labs(colour="Stream",x=NULL,y=NULL,title=title[4])+
+  labs(colour="Stream",x=NULL,y=NULL,title=title[1])+
   theme(legend.position="bottom")
 
-ggsave("plots/Chlapoint.tiff")
+ggsave("plots/TPpoint.tiff",width=4.5,height=3,units="in")
+
+#########Chem Line Plot###########################
+title<-c("Average Monthly Temperature (C)","Median 2 Week Flow Prior to Sample Date (cfsm)",
+         "Percent Canopy Cover")
+##columns 5,14,10
+
+ggplot(samples,aes(Collect_Date,samples[,10],
+                   colour=factor(Stream),
+                   group=factor(Stream,
+                                levels=c("Salmon River", "Norwalk River","Pequabuck River"))))+
+  geom_point(size=2)+
+  geom_line(size=1)+
+  scale_x_date(date_labels = "%m-%Y")+
+  scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+
+  labs(colour="Stream",x=NULL,y=NULL,title=title[3])+
+  theme(legend.position="bottom")
+
+ggsave("plots/canopypoint.tiff",width=4.5,height=3,units="in")
 
 
 ######Chem Box Plot###########################################
