@@ -1,4 +1,4 @@
-setwd("/home/mbecker/Documents/GitHub/SeasonalProductivity")
+setwd("/home/mkozlak/Projects/GitHub/SeasonalProductivity")
 
 library(vegan)
 library(reshape2)
@@ -70,10 +70,74 @@ SPPTime
 SPP<- decostand(SPP,"total")#rel abundance
 
 SPP.dist <- vegdist(SPP,"bray")
+distSite<-sites[c("TP")]
+rownames(distSite)<-sites$SID
+Site.dist<-vegdist(distSite,"euclidean")
+mantel(SPP.dist,Site.dist)
+
+
 SPP.dist<-as.matrix(SPP.dist)
+Site.dist<-as.matrix(Site.dist)
 levelplot(SPP.dist,at=seq(0,1,0.01),
           col.regions=topo.colors(100),scales=list(cex=0.4),
           xlab="",ylab="",main="Percent Difference Coefficient (Bray Curtis)")
+
+SPDist<- melt(as.matrix(SPP.dist),varnames=c("SID","col"))
+STDist<-melt(as.matrix(Site.dist),varnames=c("SID","col"))
+DistCmb<-merge(SPDist,STDist,by=c("SID","col"))
+DistCmb<-DistCmb[DistCmb$value.x!=0,]
+colnames(DistCmb)[3:4]<-c("C","TP")
+DistCmb$SSite<-ifelse(substr(DistCmb$SID, 1, 3)==substr(DistCmb$col, 1, 3),
+                      substr(DistCmb$SID, 1, 3),"DIFF")
+
+ggplot(DistCmb,aes(x=TP,y=((1-C)*100),colour=SSite))+
+  geom_point()+
+  geom_smooth(method=lm,se=FALSE,colour="black")+
+  ylim(0,100)+
+  labs(y ="Species similarity (%)", x="TP (mg/L) distance")
+
+ggplot(DistCmb[DistCmb$SSite=="DIFF",],aes(x=TP,y=((1-C)*100),colour=SSite))+
+  geom_point()+
+  geom_smooth(method=lm,se=FALSE,colour="black")+
+  ylim(0,50)+
+  labs(y ="Species similarity (%)", x="TP (mg/L) distance")
+
+ggplot(DistCmb[DistCmb$SSite!="DIFF",],aes(x=TP,y=((1-C)*100),colour=SSite))+
+  geom_point()+
+  geom_smooth(method=lm,se=FALSE,colour="black")+
+  ylim(0,100)+
+  labs(y ="Species similarity (%)", x="TP (mg/L) distance")
+
+########Chlor a VS Other Parameters Across All Sample######
+distChla<-sites[c("Chla")]
+rownames(distChla)<-sites$SID
+Chla.dist<-vegdist(distChla,"euclidean")
+distSite<-sites[c("TP")]
+rownames(distSite)<-sites$SID
+Site.dist<-vegdist(distSite,"euclidean")
+mantel(Chla.dist,Site.dist)
+
+
+Chla.dist<-as.matrix(Chla.dist)
+Site.dist<-as.matrix(Site.dist)
+levelplot(SPP.dist,at=seq(0,1,0.01),
+          col.regions=topo.colors(100),scales=list(cex=0.4),
+          xlab="",ylab="",main="Percent Difference Coefficient (Bray Curtis)")
+
+ChlaDist<- melt(as.matrix(Chla.dist),varnames=c("SID","col"))
+STDist<-melt(as.matrix(Site.dist),varnames=c("SID","col"))
+DistCmb<-merge(ChlaDist,STDist,by=c("SID","col"))
+DistCmb<-DistCmb[DistCmb$value.x!=0,]
+colnames(DistCmb)[3:4]<-c("C","Var")
+DistCmb$SSite<-ifelse(substr(DistCmb$SID, 1, 3)==substr(DistCmb$col, 1, 3),
+                      substr(DistCmb$SID, 1, 3),"DIFF")
+
+ggplot(DistCmb,aes(x=Var,y=C,colour=SSite))+
+  geom_point()+
+  geom_smooth(method=lm,se=FALSE,colour="black")+
+  labs(y ="Chla distance", x="TP (mg/L) distance")
+#annotate("text", x=c(0.001,0.001), y=c(90,85), 
+#label=c("mantel r = =0.1944","p = 0.7639"),hjust=0)
 
 
 ####Similarity between sites collected during the same month###########
@@ -127,20 +191,21 @@ SPDist$Collect_Date<-as_date(SPDist$Collect_Date)
 SPDist$DDiff<-abs(SPDist$Collect_Date-SPDist$SimDate)
 SPDist$TPDiff<-abs(SPDist$TP.x-SPDist$TP.y)
 SPDist$TempDiff<-abs(SPDist$Temp.x-SPDist$Temp.y)
+SPDist$ChlaDiff<-abs(SPDist$Chla.x-SPDist$Chla.y)
 
 # Spp Similarity Vs Time
-Stream<-"Salmon River"
+Stream<-"Pequabuck River"
 SPDistSite<-SPDist[SPDist$Stream==Stream,]
 ggplot(SPDistSite,aes(x=DDiff,y=((1-value)*100)))+
   geom_point()+
   geom_smooth(method=lm,se=FALSE,colour="black")+
   ylim(0,100)+
   labs(y ="Species similarity (%)", x="Temporal distance (days)",
-       title=Stream)+
-  annotate("text", x=c(40,40), y=c(90,85), 
-           label=c("mantel r = 0.9653","p = 0.003"),hjust=0)
+       title=Stream)
+  #annotate("text", x=c(40,40), y=c(90,85), 
+           #label=c("mantel r = 0.9653","p = 0.003"),hjust=0)
 
-ggsave(paste(Stream,".jpg"),width=4,height=4)
+ggsave(paste(Stream,"SoftAlg.tiff"),width=4,height=4)
 
 # Spp Similarity vs TP Diff
 Stream<-"Salmon River"
@@ -150,27 +215,29 @@ ggplot(SPDistSite,aes(x=TPDiff,y=((1-value)*100)))+
   geom_smooth(method=lm,se=FALSE,colour="black")+
   ylim(0,100)+
   labs(y ="Species similarity (%)", x="TP (mg/L) distance",
-       title=Stream)+
-  annotate("text", x=c(0.001,0.001), y=c(90,85), 
-           label=c("mantel r = =0.1944","p = 0.7639"),hjust=0)
+       title=Stream)
+  #annotate("text", x=c(0.001,0.001), y=c(90,85), 
+           #label=c("mantel r = =0.1944","p = 0.7639"),hjust=0)
 
-ggsave(paste(Stream,"SPPTPDiff.jpg"),width=4,height=4)
-  
+ggsave(paste(Stream,"SoftAlgSPPTPDiff.jpg"),width=4,height=4)
 
-
-# Spp Similarity vs Temp Diff
-Stream<-"Salmon River"
+# Spp Similarity vs Chla Diff
+Stream<-"Norwalk River"
 SPDistSite<-SPDist[SPDist$Stream==Stream,]
-ggplot(SPDistSite,aes(x=TempDiff,y=((1-value)*100)))+
+ggplot(SPDistSite,aes(x=ChlaDiff,y=((1-value)*100)))+
   geom_point()+
   geom_smooth(method=lm,se=FALSE,colour="black")+
   ylim(0,100)+
-  labs(y ="Species similarity (%)", x="Temperature (Degree C) distance",
-       title=Stream)+
-  annotate("text", x=c(1,1), y=c(90,85), 
-           label=c("mantel r = 0.4487","p = 0.057"),hjust=0)
+  labs(y ="Species similarity (%)", x="Chl a (mg/m2) distance",
+       title=Stream)
+#annotate("text", x=c(0.001,0.001), y=c(90,85), 
+#label=c("mantel r = =0.1944","p = 0.7639"),hjust=0)
 
-ggsave(paste(Stream,"SPPTempDiff.jpg"),width=4,height=4)
+ggsave(paste(Stream,"SoftAlgSPPChlaDiff.jpg"),width=4,height=4)
+  
+
+
+
 
 
 SPDistM<-SPDist[SPDist$MS1==6,]

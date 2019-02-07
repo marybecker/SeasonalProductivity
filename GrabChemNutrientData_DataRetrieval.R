@@ -1,9 +1,4 @@
-setwd("/home/mbecker/Documents/GitHub/SeasonalProductivity")
-
-samples<-read.csv("data/sites.csv",header=TRUE)
-samples$Collect_Date<-mdy(samples$Collect_Date)
-samples$Stream<- factor(samples$Stream,
-                        levels=c("Salmon River","Norwalk River","Pequabuck River"))
+setwd("P:/Projects/GitHub_Prj/SeasonalProductivity")
 
 library(dataRetrieval)
 library(plyr)
@@ -11,6 +6,11 @@ library(ggplot2)
 library(grid)
 library(reshape2)
 library(lubridate)
+
+samples<-read.csv("data/sites.csv",header=TRUE)
+samples$Collect_Date<-mdy(samples$Collect_Date)
+samples$Stream<- factor(samples$Stream,
+                        levels=c("Salmon River","Norwalk River","Pequabuck River"))
 
 
 SID<- c("01189000","01209700","01193500")
@@ -88,7 +88,7 @@ ggplot(samples,aes(Collect_Date,samples[,6],
 
 ggsave("plots/TPpoint.tiff",width=4.5,height=3,units="in")
 
-#########Chem Line Plot###########################
+#########Habitat Line Plot###########################
 title<-c("Average Monthly Temperature (C)","Median 2 Week Flow Prior to Sample Date (cfsm)",
          "Percent Canopy Cover")
 ##columns 5,14,10
@@ -109,11 +109,40 @@ ggsave("plots/canopypoint.tiff",width=4.5,height=3,units="in")
 
 ######Chem Box Plot###########################################
 
-p1<-ggplot(samples,aes(Stream,OrthoP))+
+title<-c("Phosphorus mg/L","Total Nitrogen mg/L","Orthophosphate mg/L",
+         "Chlorophyll a, periphyton, mg/m2")
+
+ggplot(samples,aes(Stream,TP,fill=Stream))+
   geom_boxplot()+
+  scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+
   scale_y_log10()+
-  labs(title="TP")+
-  theme(axis.title.x=element_blank(),axis.title.y=element_blank())
+  labs(colour="Stream",x=NULL,y=NULL,title=title[1])+
+  theme(legend.position="none")
+
+ggsave("plots/TP.tiff",width=4.5,height=3,units="in")
+
+title<-c("Average Monthly Temperature (C)","Median 2 Week Flow Prior to Sample Date (cfsm)",
+         "Percent Canopy Cover")
+
+ggplot(samples,aes(Stream,Temp,fill=Stream))+
+  geom_boxplot()+
+  scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3"))+
+  #scale_y_log10()+
+  labs(colour="Stream",x=NULL,y=NULL,title=title[1])+
+  theme(legend.position="none")
+
+ggsave("plots/Temp.tiff",width=4.5,height=3,units="in")
+
+#######chlor a Vs TP Plot#####################
+ggplot(samples,aes(Temp,Chla))+
+  geom_point(size=2)+
+  #scale_x_log10()+
+  geom_smooth(method=lm,se=FALSE,colour="black")+
+  labs(colour="Stream",x="Temperature Degree C",y="Chlorophyll a, periphyton, mg/m2",
+       title="Chlor a Vs Temp")+
+  theme(legend.position="bottom")
+
+ggsave("plots/ChlaVSTemp.tiff",width=4.5,height=3,units="in")
 
 
 
